@@ -12,6 +12,7 @@ public final class NoOpStatsDClient implements StatsDClient {
     @Override public void count(String aspect, int delta) { }
     @Override public void incrementCounter(String aspect) { }
     @Override public void increment(String aspect) { }
+	@Override public void incrementCounterSampled(String aspect, int n, double rate) { }
     @Override public void decrementCounter(String aspect) { }
     @Override public void decrement(String aspect) { }
     @Override public void recordGaugeValue(String aspect, int value) { }

@@ -3,6 +3,7 @@ package com.timgroup.statsd;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -43,6 +44,7 @@ public final class NonBlockingStatsDClient implements StatsDClient {
     private final String prefix;
     private final DatagramSocket clientSocket;
     private final StatsDClientErrorHandler handler;
+    private static final Random RND = new Random();
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
         final ThreadFactory delegate = Executors.defaultThreadFactory();
@@ -99,7 +101,7 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      *     if the client could not be started
      */
     public NonBlockingStatsDClient(String prefix, String hostname, int port, StatsDClientErrorHandler errorHandler) throws StatsDClientException {
-	prefix = (prefix != null && prefix.length() > 0) ? prefix + ".": "";
+    	prefix = (prefix != null && prefix.length() > 0) ? prefix + ".": "";
         this.prefix = prefix;
         this.handler = errorHandler;
         
@@ -167,6 +169,17 @@ public final class NonBlockingStatsDClient implements StatsDClient {
         incrementCounter(aspect);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see com.timgroup.statsd.StatsDClient#incrementCounterSampled(java.lang.String, int, double)
+     */
+	@Override
+	public void incrementCounterSampled(String aspect, int n, double rate) {
+        if (RND.nextDouble() < rate) {
+            send(String.format("%s%s:%d|c|@%.3f", prefix, aspect, n, rate));
+        }
+	}
+
     /**
      * Decrements the specified counter by one.
      * 
@@ -227,7 +240,7 @@ public final class NonBlockingStatsDClient implements StatsDClient {
         
         StringBuilder sb = new StringBuilder();
         for(int i = 0; i < elements.length; i++) {
-            sb.append(String.format("%s.%s:%s|s", prefix, aspect, elements[i]));
+            sb.append(String.format("%s%s:%s|s", prefix, aspect, elements[i]));
             if(i < elements.length - 1) sb.append("\n");
         }
         send(sb.toString());
