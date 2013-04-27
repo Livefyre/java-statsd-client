@@ -99,6 +99,7 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      *     if the client could not be started
      */
     public NonBlockingStatsDClient(String prefix, String hostname, int port, StatsDClientErrorHandler errorHandler) throws StatsDClientException {
+	prefix = (prefix != null && prefix.length() > 0) ? prefix + ".": "";
         this.prefix = prefix;
         this.handler = errorHandler;
         
@@ -142,7 +143,7 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      */
     @Override
     public void count(String aspect, int delta) {
-        send(String.format("%s.%s:%d|c", prefix, aspect, delta));
+        send(String.format("%s%s:%d|c", prefix, aspect, delta));
     }
 
     /**
@@ -199,7 +200,7 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      */
     @Override
     public void recordGaugeValue(String aspect, int value) {
-        send(String.format("%s.%s:%d|g", prefix, aspect, value));
+        send(String.format("%s%s:%d|g", prefix, aspect, value));
     }
 
     /**
@@ -222,7 +223,7 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      */
     @Override
     public void recordExecutionTime(String aspect, int timeInMs) {
-        send(String.format("%s.%s:%d|ms", prefix, aspect, timeInMs));
+        send(String.format("%s%s:%d|ms", prefix, aspect, timeInMs));
     }
 
     /**
